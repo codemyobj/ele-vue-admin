@@ -31,9 +31,12 @@
         </el-form-item>
 
         <!-- 按钮 -->
-        <el-form-item class="btn">
+        <el-form-item class="btns">
           <el-button type="primary" @click="login">登录</el-button>
-          <el-button type="info" title="重置表单数据、清除验证规则"
+          <el-button
+            type="info"
+            @click="resetLoginForm"
+            title="重置表单数据、清除验证规则"
             >重置</el-button
           >
         </el-form-item>
@@ -95,6 +98,10 @@ export default {
     this.notify.close();
   },
   methods: {
+    //点击重置按钮 重置表单数据和验证规则
+    resetLoginForm() {
+      this.loginForm = {};
+    },
     login() {
       //判断是否校验通过 => valid是否通过，field未通过的字段
       this.$refs.loginFormRef.validate(async (valid, field) => {
@@ -173,7 +180,7 @@ export default {
   box-sizing: border-box;
 }
 
-.btn {
+.btns {
   display: flex;
   justify-content: center;
 }
