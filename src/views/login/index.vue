@@ -91,6 +91,9 @@ export default {
       duration: 5000
     });
   },
+  destroyed() {
+    this.notify.close();
+  },
   methods: {
     login() {
       //判断是否校验通过 => valid是否通过，field未通过的字段
