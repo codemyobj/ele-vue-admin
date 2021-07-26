@@ -1,4 +1,6 @@
 // 定义过滤器
+import Vue from "vue";
+
 Vue.filter("dataFormat", function(originVal) {
   const dt = new Date(originVal * 1000);
 

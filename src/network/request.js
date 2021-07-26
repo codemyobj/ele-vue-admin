@@ -1,6 +1,5 @@
-import axios from "axios";
 import Vue from "vue";
-import { config } from "vue/types/umd";
+import axios from "axios";
 
 const url = `http://120.53.120.229:8888/api/private/v1/`;
 
