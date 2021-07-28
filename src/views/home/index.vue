@@ -54,7 +54,7 @@
           :unique-opened="true"
           :default-active="activePath"
         >
-          <el-menu-item>
+          <el-menu-item index="/welcome">
             <i class="iconfont icon-home3" />
             <span slot="title">Welcome</span>
           </el-menu-item>
@@ -110,7 +110,7 @@ import { getMenuList } from "@/api/menu";
 export default {
   name: "Home",
   components: {
-    FullScreen
+    FullScreen,
   },
   props: {},
   data() {
@@ -125,40 +125,41 @@ export default {
         103: "iconfont icon-tijikongjian",
         101: "iconfont icon-shangpin",
         102: "iconfont icon-danju",
-        145: "iconfont icon-baobiao" //数据统计模块的icon
-      }
+        145: "iconfont icon-baobiao", //数据统计模块的icon
+      },
     };
   },
   created() {
+    this.$router.push("/welcome");
     this._getMenuList();
   },
   watch: {
     $route: {
       handler(val, oldVal) {
         this.activePath = val.path;
-        this.menusId.forEach(i => {
+        this.menusId.forEach((i) => {
           this.$refs.elMenuRef.closeMneu(item + "");
         });
       },
       //深度观察监听
-      deep: true
-    }
+      deep: true,
+    },
   },
   methods: {
     _getMenuList() {
-      getMenuList().then(res => {
+      getMenuList().then((res) => {
         const data = res.data;
         console.log(data);
         if (data.meta.status !== 200) {
           return this.$message({
             message: res.meta.msg,
-            duration: 1000
+            duration: 1000,
           });
         }
         this.menuList = data.data;
         console.log(this.menuList);
         //过滤掉数据统计模块
-        this.menuList = this.menuList.filter(item => {
+        this.menuList = this.menuList.filter((item) => {
           //吧每个菜单的id保存到一个数组中，切换的时候要用的
           this.menusId.push(item.id);
           return item.authName != "数据统计";
@@ -174,8 +175,8 @@ export default {
     },
     toggleRouter() {
       this.$router.push("/welcome");
-    }
-  }
+    },
+  },
 };
 </script>
 
