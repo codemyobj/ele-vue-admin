@@ -2,7 +2,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
-import echarts from "echarts";
+import * as echarts from "echarts";
 import "./plugins/element";
 
 // 导入全局样式表

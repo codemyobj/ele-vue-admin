@@ -13,6 +13,7 @@ let config = {
 
 const request = axios.create(config);
 
+
 request.interceptors.request.use(req => {
   // 添加进度条
   NProgress.start();
