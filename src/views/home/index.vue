@@ -130,7 +130,6 @@ export default {
     };
   },
   created() {
-    this.$router.push("/welcome");
     this._getMenuList();
   },
   watch: {
@@ -138,7 +137,7 @@ export default {
       handler(val, oldVal) {
         this.activePath = val.path;
         this.menusId.forEach((i) => {
-          this.$refs.elMenuRef.closeMneu(item + "");
+          this.$refs.elMenuRef.closeMenu(i + "");
         });
       },
       //深度观察监听
