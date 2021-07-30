@@ -20,3 +20,18 @@ export function userStateChange(userInfo) {
     method: 'put'
   }).catch(err => err)
 }
+
+export function editUserData(id) {
+  return request({
+    url: 'users/' + id,
+    method: 'get'
+  }).catch(err => err)
+}
+
+export function userInfoChange(id, info) {
+  return request({
+    url: 'users/' + id,
+    method: 'put',
+    data: info
+  }).catch(err => err)
+}

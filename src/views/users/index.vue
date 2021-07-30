@@ -28,31 +28,15 @@
         layout="total,sizes,prev,pager,next,jumper"
       />
       <!-- 添加用户对话框 -->
-      <add-user :addDialogVisible="addDialogVisible" @addUser="addUser" />
+      <add-user @addUser="addUser" />
 
       <!-- 修改用户对话框 -->
-      <el-dialog
-        title="修改用户信息"
-        width="40%"
-        :visible.sync="editDialogVisible"
-      >
-        <el-form ref="editFormRef" label-width="70px">
-          <el-form-item label="用户名">
-            <el-input></el-input>
-          </el-form-item>
-          <el-form-item label="邮箱">
-            <el-input></el-input>
-          </el-form-item>
-          <el-form-item label="手机号">
-            <el-input></el-input>
-          </el-form-item>
-        </el-form>
-        <!-- 底部区域 -->
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="editDialogVisible = false">取消</el-button>
-          <el-button type="primary">确定</el-button>
-        </span>
-      </el-dialog>
+      <edit-user
+        :editDialogVisible="editDialogVisible"
+        :editForm="editForm"
+        @editUserInfo="editUserInfo"
+        @editDialogClick="editDialogClick"
+      />
 
       <!-- 分配权限 -->
       <el-dialog title="分配权限" width="40%" :visible.sync="setDialogVisible">
@@ -82,8 +66,17 @@ import BreadCrumb from "@/components/common/breadCrumb";
 import SearchAndAdd from "./children/SearchAndAdd";
 import UserList from "./children/UserList.vue";
 import AddUser from "./children/AddUser.vue";
+import EditUser from "./children/EditUser.vue";
 
-import { getUserList, userStateChange, addUserList } from "@/api/user";
+import {
+  getUserList,
+  userStateChange,
+  addUserList,
+  editUserData,
+  userInfoChange,
+} from "@/api/user";
+
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "User",
@@ -92,6 +85,7 @@ export default {
     SearchAndAdd,
     UserList,
     AddUser,
+    EditUser,
   },
   props: {},
   data() {
@@ -102,24 +96,28 @@ export default {
         pagesize: 10, //每页显示多少条数据
       },
       userList: [],
-      addDialogVisible: false,
       //添加用户表单验证规则
-
       editDialogVisible: false,
+      //查询到的用户信息对象
+      editForm: {},
       setDialogVisible: false,
     };
   },
   created() {
     this.getUserList();
   },
+  computed: {
+    ...mapGetters(["addDialogVisible"]),
+  },
   methods: {
+    ...mapMutations(["IsAddDialogShow"]),
     getUserList() {
       getUserList(this.queryInfo).then((res) => {
         const data = res.data;
         // 获取失败
         if (data.meta.status !== 200) {
           return this.$message.error({
-            message: res.meta.msg,
+            message: data.meta.msg,
             duration: 1000,
           });
         }
@@ -145,17 +143,7 @@ export default {
     },
     //打开添加用户
     addClick() {
-      this.addDialogVisible = true;
-    },
-    // 监听添加用户对话框的关闭时间
-    addDialogClose() {
-      //重置表单
-      this.addForm = {
-        username: "",
-        password: null,
-        email: "",
-        mobile: null,
-      };
+      this.addDialogVisible = !this.addDialogVisible;
     },
     //添加用户
     addUser(addForm) {
@@ -177,12 +165,51 @@ export default {
           dangerouslyUseHTMLString: true,
           duration: 0,
         });
-        this.addDialogVisible = false;
+        this.$store.commit("IsAddDialogShow", false);
         this.getUserList();
       });
     },
-    editClick() {
-      this.editDialogVisible = true;
+    // 修改按钮
+    editClick(id) {
+      this.editDialogVisible = !this.editDialogVisible;
+      editUserData(id).then((res) => {
+        const data = res.data;
+        if (data.meta.status !== 200) {
+          return this.$message.error({
+            message: data.meta.msg,
+            duration: 1000,
+          });
+        }
+        this.editForm = data.data;
+      });
+    },
+    //取消修改
+    editDialogClick() {
+      this.editDialogVisible = !this.editDialogVisible;
+    },
+    // 确认修改
+    editUserInfo(editForm) {
+      const putInfo = {
+        email: editForm.email,
+        mobile: editForm.mobile,
+      };
+      userInfoChange(editForm.id, putInfo).then((res) => {
+        const data = res.data;
+        console.log(data);
+        if (data.meta.status !== 200) {
+          return this.message({
+            message: data.meta.msg,
+            duration: 1000,
+          });
+        }
+
+        this.$message.success({
+          message: "修改用户数据成功",
+          duration: 1500,
+        });
+        this.editDialogVisible = !this.editDialogVisible;
+        this.getUserList();
+      });
     },
     setClick() {
       this.setDialogVisible = true;

@@ -22,10 +22,16 @@
           round
           type="primary"
           icon="el-icon-edit"
-          @click="editClick"
+          @click="editClick(scope.row.id)"
         />
         <!-- 删除 -->
-        <el-button size="mini" round type="danger" icon="el-icon-delete" />
+        <el-button
+          size="mini"
+          round
+          type="danger"
+          icon="el-icon-delete"
+          @click="removeClick(scope.row.id)"
+        />
         <!-- 分配权限 -->
         <el-tooltip
           effect="dark"
@@ -38,7 +44,7 @@
             round
             type="warning"
             icon="el-icon-setting"
-            @click="setClick"
+            @click="setRoleClick(scope.row)"
           />
         </el-tooltip>
       </template>
@@ -66,10 +72,11 @@ export default {
       console.log(userInfo);
       this.$emit("userStateChange", userInfo);
     },
-    editClick() {
-      this.$emit("editClick");
+    editClick(id) {
+      this.$emit("editClick", id);
     },
-    setClick() {
+    removeClick() {},
+    setRoleClick() {
       this.$emit("setClick");
     },
   },

@@ -22,6 +22,8 @@
 </template>
 
 <script>
+import { mapMutations } from "vuex";
+
 export default {
   name: "SearchAndAdd",
   components: {},
@@ -37,8 +39,9 @@ export default {
     return {};
   },
   methods: {
+    ...mapMutations(["IsAddDialogShow"]),
     addClick() {
-      this.$emit("addClick");
+      this.$store.commit("IsAddDialogShow", true);
     },
     getUserList() {
       this.$emit("getUserList");

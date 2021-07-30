@@ -4,6 +4,7 @@
     @close="addDialogClose"
     :visible.sync="addDialogVisible"
     width="40%"
+    :close-on-click-modal="false"
   >
     <el-form
       ref="addFormRef"
@@ -26,7 +27,7 @@
     </el-form>
     <!-- 底部区域 -->
     <span slot="footer" class="dialog-footer">
-      <el-button @click="addDialogVisible = false">取消</el-button>
+      <el-button @click="addUserCancel">取消</el-button>
       <el-button type="primary" @click="addUser">确定</el-button>
     </span>
   </el-dialog>
@@ -34,18 +35,11 @@
 
 <script>
 import { addRules } from "../FormRules";
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   name: "AddUser",
   components: {},
-  props: {
-    addDialogVisible: {
-      type: Boolean,
-      default() {
-        return false;
-      },
-    },
-  },
   data() {
     return {
       addForm: {
@@ -57,9 +51,14 @@ export default {
       addRules,
     };
   },
+  computed: {
+    ...mapGetters(["addDialogVisible"]),
+  },
   methods: {
+    ...mapMutations(["IsAddDialogShow"]),
     addDialogClose() {
       //重置表单
+      this.$store.commit("IsAddDialogShow", false);
       this.addForm = {
         username: "",
         password: null,
@@ -79,6 +78,9 @@ export default {
         }
         this.$emit("addUser", this.addForm);
       });
+    },
+    addUserCancel() {
+      this.$store.commit("IsAddDialogShow", false);
     },
   },
 };
