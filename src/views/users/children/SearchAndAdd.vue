@@ -44,7 +44,7 @@ export default {
       this.$store.commit("IsAddDialogShow", true);
     },
     getUserList() {
-      this.$emit("getUserList");
+      this.$emit("searchUserList");
     },
   },
 };

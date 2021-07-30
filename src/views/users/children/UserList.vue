@@ -53,6 +53,8 @@
 </template>
 
 <script>
+import { mapGetters, mapMutations } from "vuex";
+
 export default {
   name: "UserList",
   components: {},
@@ -67,6 +69,9 @@ export default {
   data() {
     return {};
   },
+  computed: {
+    ...mapGetters(["editDialogVisible", "setDialogVisible"]),
+  },
   methods: {
     userStateChange(userInfo) {
       console.log(userInfo);
@@ -75,9 +80,11 @@ export default {
     editClick(id) {
       this.$emit("editClick", id);
     },
-    removeClick() {},
-    setRoleClick() {
-      this.$emit("setClick");
+    removeClick(id) {
+      this.$emit("removeClick", id);
+    },
+    setRoleClick(userInfo) {
+      this.$emit("setClick", userInfo);
     },
   },
 };

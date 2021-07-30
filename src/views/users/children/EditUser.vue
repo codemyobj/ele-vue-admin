@@ -1,8 +1,13 @@
 <template>
-  <el-dialog title="修改用户信息" width="40%" :visible.sync="editDialogVisible">
+  <el-dialog
+    title="修改用户信息"
+    width="40%"
+    :visible.sync="editDialogVisible"
+    @close="editDialogClose"
+  >
     <el-form :model="editForm" ref="editFormRef" label-width="70px">
       <el-form-item label="用户名">
-        <el-input v-model="editForm.username"></el-input>
+        <el-input v-model="editForm.username" disabled></el-input>
       </el-form-item>
       <el-form-item label="邮箱" prop="email">
         <el-input v-model="editForm.email"></el-input>
@@ -13,7 +18,7 @@
     </el-form>
     <!-- 底部区域 -->
     <span slot="footer" class="dialog-footer">
-      <el-button @click="editDialogClick">取消</el-button>
+      <el-button @click="editDialogCancel">取消</el-button>
       <el-button type="primary" @click="editUserInfo">确定</el-button>
     </span>
   </el-dialog>
@@ -24,12 +29,6 @@ export default {
   name: "EditUser",
   components: {},
   props: {
-    editDialogVisible: {
-      type: Boolean,
-      default() {
-        return false;
-      },
-    },
     editForm: {
       type: Object,
       default() {
@@ -39,6 +38,16 @@ export default {
   },
   data() {
     return {};
+  },
+  computed: {
+    editDialogVisible: {
+      get() {
+        return this.$store.state.editDialogVisible;
+      },
+      set(val) {
+        this.$store.commit("IsEditDialogShow", val);
+      },
+    },
   },
   methods: {
     editUserInfo() {
@@ -53,8 +62,11 @@ export default {
         this.$emit("editUserInfo", this.editForm);
       });
     },
-    editDialogClick() {
-      this.$emit("editDialogClick");
+    editDialogCancel() {
+      this.$store.commit("IsEditDialogShow", false);
+    },
+    editDialogClose() {
+      this.$store.commit("IsEditDialogShow", false);
     },
   },
 };

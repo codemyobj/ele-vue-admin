@@ -52,7 +52,7 @@
           active-text-color="#409eff"
           :router="true"
           :unique-opened="true"
-          :default-active="activePath"
+          :default-active="$route.path"
         >
           <el-menu-item index="/welcome">
             <i class="iconfont icon-home3" />
@@ -119,7 +119,6 @@ export default {
       menuList: [],
       //需要关闭的左侧菜单id
       menusId: [],
-      activePath: "/welcome",
       iconsObj: {
         125: "iconfont icon-user",
         103: "iconfont icon-tijikongjian",
@@ -148,7 +147,6 @@ export default {
     _getMenuList() {
       getMenuList().then((res) => {
         const data = res.data;
-        console.log(data);
         if (data.meta.status !== 200) {
           return this.$message({
             message: res.meta.msg,
@@ -156,7 +154,6 @@ export default {
           });
         }
         this.menuList = data.data;
-        console.log(this.menuList);
         //过滤掉数据统计模块
         this.menuList = this.menuList.filter((item) => {
           //吧每个菜单的id保存到一个数组中，切换的时候要用的

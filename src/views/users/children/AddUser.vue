@@ -4,7 +4,6 @@
     @close="addDialogClose"
     :visible.sync="addDialogVisible"
     width="40%"
-    :close-on-click-modal="false"
   >
     <el-form
       ref="addFormRef"
@@ -35,7 +34,7 @@
 
 <script>
 import { addRules } from "../FormRules";
-import { mapGetters, mapMutations } from "vuex";
+import { mapMutations } from "vuex";
 
 export default {
   name: "AddUser",
@@ -52,7 +51,15 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(["addDialogVisible"]),
+    addDialogVisible: {
+      get() {
+        return this.$store.state.addDialogVisible;
+      },
+      set(val) {
+        this.$store.commit("IsAddDialogShow", val);
+      },
+    },
+    // ...mapGetters(["addDialogVisible"]),
   },
   methods: {
     ...mapMutations(["IsAddDialogShow"]),

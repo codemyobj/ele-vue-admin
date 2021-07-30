@@ -10,73 +10,62 @@
     <!-- 卡片视图区域 -->
     <el-card>
       <!-- 搜索和添加 -->
-      <search-and-add
-        :queryInfo="queryInfo"
-        @addClick="addClick"
-        @getUserList="getUserList"
-      />
+      <search-and-add :queryInfo="queryInfo" @searchUserList="getUserList" />
       <!-- 用户列表区域 -->
       <user-list
         :user-list="userList"
         @userStateChange="changeUserState"
         @editClick="editClick"
         @setClick="setClick"
+        @removeClick="removeClick"
       />
       <!-- 分页区域 -->
-      <el-pagination
-        :page-sizes="[5, 10, 15, 20]"
-        layout="total,sizes,prev,pager,next,jumper"
+      <pagination
+        :total="total"
+        :queryInfo="queryInfo"
+        @handleSizeChange="handleSizeChange"
+        @handleCurrentChange="handleCurrentChange"
       />
       <!-- 添加用户对话框 -->
       <add-user @addUser="addUser" />
 
       <!-- 修改用户对话框 -->
-      <edit-user
-        :editDialogVisible="editDialogVisible"
-        :editForm="editForm"
-        @editUserInfo="editUserInfo"
-        @editDialogClick="editDialogClick"
-      />
+      <edit-user :editForm="editForm" @editUserInfo="editUserInfo" />
 
-      <!-- 分配权限 -->
-      <el-dialog title="分配权限" width="40%" :visible.sync="setDialogVisible">
-        <div>
-          <p>当前的用户:</p>
-          <p>当前的角色:</p>
-          <p>
-            分配新角色
-            <el-select placeholder="请选择">
-              <el-option />
-            </el-select>
-          </p>
-        </div>
-        <!-- 底部区域 -->
-        <span slot="footer" class="dialog-footer">
-          <el-button @click="editDialogVisible = false">取消</el-button>
-          <el-button type="primary">确定</el-button>
-        </span>
-      </el-dialog>
+      <!-- 分配角色 -->
+      <set-roles
+        :userInfo="userInfo"
+        :roleList="roleList"
+        @saveRoleInfo="saveRoleInfo"
+      />
     </el-card>
     <!-- 卡片视图区域 -->
   </div>
 </template>
 
 <script>
-import BreadCrumb from "@/components/common/breadCrumb";
 import SearchAndAdd from "./children/SearchAndAdd";
 import UserList from "./children/UserList.vue";
 import AddUser from "./children/AddUser.vue";
 import EditUser from "./children/EditUser.vue";
+import SetRoles from "./children/SetRoles.vue";
+import BreadCrumb from "@/components/common/breadCrumb";
+import Pagination from "@/components/common/pagination";
 
+//网络请求方法
 import {
   getUserList,
   userStateChange,
   addUserList,
   editUserData,
   userInfoChange,
+  getUserRole,
+  saveUserRole,
+  removeUser,
 } from "@/api/user";
 
-import { mapGetters, mapMutations } from "vuex";
+//vuex修改
+import { mapMutations } from "vuex";
 
 export default {
   name: "User",
@@ -86,6 +75,8 @@ export default {
     UserList,
     AddUser,
     EditUser,
+    SetRoles,
+    Pagination,
   },
   props: {},
   data() {
@@ -95,22 +86,24 @@ export default {
         pagenum: 1, //当前页码
         pagesize: 10, //每页显示多少条数据
       },
+      //用户列表
       userList: [],
-      //添加用户表单验证规则
-      editDialogVisible: false,
+      //列表总数
+      total: 0,
       //查询到的用户信息对象
       editForm: {},
-      setDialogVisible: false,
+      // 需要分配权限的用户信息
+      userInfo: {},
+      // 权限列表
+      roleList: [],
     };
   },
   created() {
     this.getUserList();
   },
-  computed: {
-    ...mapGetters(["addDialogVisible"]),
-  },
   methods: {
-    ...mapMutations(["IsAddDialogShow"]),
+    //获取修改方法
+    ...mapMutations(["IsAddDialogShow", "IsEditDialogShow", "IsSetDialogShow"]),
     getUserList() {
       getUserList(this.queryInfo).then((res) => {
         const data = res.data;
@@ -122,8 +115,10 @@ export default {
           });
         }
         this.userList = data.data.users;
+        this.total = data.data.total;
       });
     },
+    //改变状态
     changeUserState(userInfo) {
       userStateChange(userInfo).then((res) => {
         const data = res.data;
@@ -134,16 +129,11 @@ export default {
             duration: 1000,
           });
         }
-
         this.$message.success({
           message: "更新状态成功!",
           duration: 1000,
         });
       });
-    },
-    //打开添加用户
-    addClick() {
-      this.addDialogVisible = !this.addDialogVisible;
     },
     //添加用户
     addUser(addForm) {
@@ -169,9 +159,9 @@ export default {
         this.getUserList();
       });
     },
-    // 修改按钮
+    // 修改用户信息
     editClick(id) {
-      this.editDialogVisible = !this.editDialogVisible;
+      this.$store.commit("IsEditDialogShow", true);
       editUserData(id).then((res) => {
         const data = res.data;
         if (data.meta.status !== 200) {
@@ -183,11 +173,7 @@ export default {
         this.editForm = data.data;
       });
     },
-    //取消修改
-    editDialogClick() {
-      this.editDialogVisible = !this.editDialogVisible;
-    },
-    // 确认修改
+    // 确认修改按钮
     editUserInfo(editForm) {
       const putInfo = {
         email: editForm.email,
@@ -202,17 +188,91 @@ export default {
             duration: 1000,
           });
         }
-
         this.$message.success({
           message: "修改用户数据成功",
           duration: 1500,
         });
-        this.editDialogVisible = !this.editDialogVisible;
+        this.$store.commit("IsEditDialogShow", false);
         this.getUserList();
       });
     },
-    setClick() {
-      this.setDialogVisible = true;
+    //删除用户
+    async removeClick(id) {
+      const result = await this.$confirm(
+        "此操作将永久删除用户, 是否继续?",
+        "提示",
+        {
+          confirmButtonText: "确认",
+          cancelButtonText: "下次再说",
+          type: "warning",
+        }
+      ).catch((err) => err);
+      // 取消删除
+      if (result == "cancel") {
+        return this.$message.info({
+          message: "已取消删除",
+          duration: 1500,
+        });
+      }
+      //确定删除
+      removeUser(id).then((res) => {
+        const data = res.data;
+        if (data.meta.status !== 200) {
+          return this.$message.error({
+            message: field[arr[0]][0].message,
+            duration: 1500,
+          });
+        }
+        this.$message.success({
+          message: "删除成功!",
+          duration: 1500,
+        });
+        this.getUserList();
+      });
+    },
+    //分配用户角色
+    setClick(userInfo) {
+      this.$store.commit("IsSetDialogShow", true);
+      getUserRole().then((res) => {
+        const data = res.data;
+        if (data.meta.status !== 200) {
+          return this.$message.error({
+            message: data.meta.msg,
+            duration: 1500,
+          });
+        }
+        this.roleList = data.data;
+      });
+      this.$store.commit("IsSetDialogShow", true);
+      this.userInfo = userInfo;
+    },
+    //保存分配的用户角色
+    saveRoleInfo(id, rid) {
+      saveUserRole(id, rid).then((res) => {
+        const data = res.data;
+        if (data.meta.status !== 200) {
+          return this.$message.error({
+            message: data.meta.msg,
+            duration: 1500,
+          });
+        }
+        this.$message.success({
+          message: "更新角色成功",
+          duration: 1500,
+        });
+        this.getUserList();
+        this.$store.commit("IsSetDialogShow", false);
+      });
+    },
+
+    //处理页码的更新
+    handleSizeChange(newSize) {
+      this.queryInfo.pagesize = newSize;
+      this.getUserList();
+    },
+    handleCurrentChange(newPage) {
+      this.queryInfo.pagenum = newPage;
+      this.getUserList();
     },
   },
 };

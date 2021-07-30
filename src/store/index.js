@@ -7,7 +7,9 @@ import actions from './actions'
 Vue.use(Vuex)
 
 const state = {
-  addDialogVisible: false
+  addDialogVisible: false,
+  editDialogVisible: false,
+  setDialogVisible: false
 }
 
 export default new Vuex.Store({
