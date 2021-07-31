@@ -214,8 +214,10 @@ export default {
   background-color: #333744;
 }
 .el-main {
-  position: relative;
+  position: relataive;
   background-color: #eaedf1;
+  overflow-y: scroll;
+  height: 93.5vh;
 }
 .toggle-button {
   background-color: #4a5064;

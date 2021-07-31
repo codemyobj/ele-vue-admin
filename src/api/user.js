@@ -41,7 +41,7 @@ export function userInfoChange(id, info) {
   }).catch(err => err)
 }
 
-//获取角色
+// 获取所有角色列表数据
 export function getUserRole() {
   return request({
     url: 'roles',
