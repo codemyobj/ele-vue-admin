@@ -20,3 +20,10 @@ export function editGoodsSubmit(id, editForm) {
     method: 'put'
   }).catch(err => err)
 }
+
+export function removeGoods(id) {
+  return request({
+    url: 'goods/' + id,
+    method: 'delete'
+  }).catch(err => err)
+}

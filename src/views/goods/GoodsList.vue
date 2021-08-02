@@ -7,95 +7,13 @@
 
     <!-- 卡片视图区域 -->
     <el-card>
-      <!-- 搜索 -->
-      <el-row :gutter="10">
-        <el-col :span="8">
-          <el-input placeholder="请输入内容">
-            <el-button slot="append" icon="el-icon-search" />
-          </el-input>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" @click="$router.push('/goods/add')"
-            >添加商品</el-button
-          >
-        </el-col>
-      </el-row>
+      <!-- 搜索区域 -->
+      <add-and-search :queryInfo="queryInfo" @getGoodsList="_getGoodsList" />
 
       <!-- table表格区域 -->
-      <el-table :data="goodsList" border stripe style="width: 100%">
-        <el-table-column type="expand">
-          <template v-slot="scope">
-            <el-form label-position="left" inline class="demo-table-expand">
-              <el-form-item label="商品名称 :">
-                <span>{{ scope.row.goods_name }}</span>
-              </el-form-item>
-              <el-form-item label="价格 :">
-                <span>{{ scope.row.goods_price + ".00" }}</span>
-              </el-form-item>
-              <el-form-item label="库存 :">
-                <span>{{ scope.row.goods_number }}</span>
-              </el-form-item>
-              <el-form-item label="重量 :">
-                <span>{{ scope.row.goods_weight }}</span>
-              </el-form-item>
-              <el-form-item label="商品状态 :">
-                <span v-if="scope.row.goods_state === 0">未审核</span>
-                <span v-else>已审核</span>
-              </el-form-item>
-              <el-form-item label="添加时间 :">
-                <span>{{ scope.row.add_time }}</span>
-              </el-form-item>
-              <el-form-item label="更新时间 :">
-                <span>{{ scope.row.upd_time }}</span>
-              </el-form-item>
-              <el-form-item label="是否为热销品 :">
-                <i
-                  style="color: green; font-size: 18px"
-                  class="el-icon-success"
-                  v-if="scope.row.is_promote"
-                />
-                <i
-                  style="color: red; font-size: 18px"
-                  class="el-icon-error"
-                  v-else
-                />
-              </el-form-item>
-              <el-form-item label="热销品数量 :">
-                <span>{{ scope.row.hot_number }}</span>
-              </el-form-item>
-            </el-form>
-          </template>
-        </el-table-column>
-        <el-table-column type="index" label="#" />
-        <el-table-column label="商品名称" prop="goods_name" />
-        <el-table-column
-          label="商品价格(元)"
-          prop="goods_price"
-          width="105px"
-        />
-        <el-table-column
-          label="商品重量(克)"
-          prop="goods_weight"
-          width="105px"
-        />
-        <el-table-column label="创建时间" prop="add_time" width="165px">
-          <template v-slot="scope">{{ scope.row.add_time }}</template>
-        </el-table-column>
-        <el-table-column fixed="right" label="操作" width="180px">
-          <template v-slot="scope">
-            <el-button
-              size="mini"
-              type="primary"
-              icon="el-icon-edit"
-              @click="editClick(scope.row)"
-              >编辑</el-button
-            >
-            <el-button size="mini" type="danger" icon="el-icon-delete"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
+      <table-list :goodsList="goodsList" />
+
+      <!-- 页码区域 -->
       <pagination
         :queryInfo="queryInfo"
         :total="total"
@@ -103,6 +21,7 @@
         @handleCurrentChange="handleCurrentChange"
       />
     </el-card>
+
     <!-- EditDialog -->
     <edit-dialog :editForm="editForm" @editGoodsSure="editGoodsSure" />
   </div>
@@ -111,9 +30,16 @@
 <script>
 import BreadCrumb from "@/components/common/breadCrumb";
 import Pagination from "@/components/common/pagination";
+import AddAndSearch from "./listChildren/addAndSearch.vue";
 import EditDialog from "./listChildren/editDialog.vue";
+import tableList from "./listChildren/tableList.vue";
 
-import { getGoodsList, getEditGoods, editGoodsSubmit } from "../../api/goods";
+import {
+  getGoodsList,
+  getEditGoods,
+  editGoodsSubmit,
+  removeGoods,
+} from "@/api/goods";
 
 import { mapMutations } from "vuex";
 
@@ -123,6 +49,8 @@ export default {
     BreadCrumb,
     Pagination,
     EditDialog,
+    AddAndSearch,
+    tableList,
   },
   props: {},
   data() {
@@ -184,7 +112,6 @@ export default {
             duration: 1500,
           });
         }
-
         this.$message.success({
           message: "编辑商品成功",
           duration: 1000,
@@ -194,9 +121,53 @@ export default {
       });
     },
 
+    // 点击删除
+    async removeClick(goodsInfo) {
+      const result = await this.$confirm(
+        `此操作将永久删除 <strong style="color:red;">${goodsInfo.goods_name}</strong>, 是否继续?`,
+        "提示",
+        {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          dangerouslyUseHTMLString: true,
+          type: "warning",
+        }
+      ).catch((reason) => reason);
+
+      // 取消删除
+      if (result === "cancel") {
+        return this.$message.info({
+          message: "已取消删除",
+          duration: 1500,
+        });
+      }
+
+      // 确定删除
+      removeGoods(goodsInfo.goods_id).then((res) => {
+        const data = res.data;
+        if (data.meta.status !== 200) {
+          return this.$message.error({
+            message: data.meta.msg,
+            duration: 1000,
+          });
+        }
+        this.$message.success({
+          message: "删除成功!",
+          duration: 1500,
+        });
+        this._getGoodsList();
+      });
+    },
+
     //处理页码
-    handleSizeChange() {},
-    handleCurrentChange() {},
+    handleSizeChange(newSize) {
+      this.queryInfo.pagesize = newSize;
+      this._getGoodsList();
+    },
+    handleCurrentChange(newPage) {
+      this.queryInfo.pagenum = newPage;
+      this._getGoodsList();
+    },
   },
 };
 </script>
