@@ -102,8 +102,9 @@ export default {
     this.getUserList();
   },
   methods: {
-    //获取修改方法
+    //获取commit修改方法
     ...mapMutations(["IsAddDialogShow", "IsEditDialogShow", "IsSetDialogShow"]),
+    //获取用户列表
     getUserList() {
       getUserList(this.queryInfo).then((res) => {
         const data = res.data;
@@ -246,7 +247,7 @@ export default {
       this.$store.commit("IsSetDialogShow", true);
       this.userInfo = userInfo;
     },
-    //保存分配的用户角色
+    // 确定分配
     saveRoleInfo(id, rid) {
       saveUserRole(id, rid).then((res) => {
         const data = res.data;
@@ -264,7 +265,6 @@ export default {
         this.$store.commit("IsSetDialogShow", false);
       });
     },
-
     //处理页码的更新
     handleSizeChange(newSize) {
       this.queryInfo.pagesize = newSize;

@@ -26,7 +26,7 @@
     </el-form>
     <!-- 底部区域 -->
     <span slot="footer" class="dialog-footer">
-      <el-button @click="addUserCancel">取消</el-button>
+      <el-button @click="addDialogClose">取消</el-button>
       <el-button type="primary" @click="addUser">确定</el-button>
     </span>
   </el-dialog>
@@ -85,9 +85,6 @@ export default {
         }
         this.$emit("addUser", this.addForm);
       });
-    },
-    addUserCancel() {
-      this.$store.commit("IsAddDialogShow", false);
     },
   },
 };

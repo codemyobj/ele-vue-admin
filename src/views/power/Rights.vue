@@ -1,6 +1,6 @@
 <template>
   <div>
-    <breadCrumb>
+    <breadCrumb class="bread">
       <span slot="slotA">权限管理</span>
       <span slot="slotB">权限列表</span>
     </breadCrumb>

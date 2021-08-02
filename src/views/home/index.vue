@@ -7,7 +7,7 @@
         <span>优客购电商后台管理系统</span>
         <span id="version">Version: 1.3.0</span>
       </div>
-      <div>
+      <div class="header_right">
         <div id="user-name">欢迎您：admin</div>
         <full-screen />
         <el-dropdown trigger="click">
@@ -205,9 +205,14 @@ export default {
       width: 55px;
       height: 55px;
       border-radius: 50%;
-      margin-right: 20px;
+      margin-right: 5px;
     }
   }
+}
+.d-flex {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .el-aside {

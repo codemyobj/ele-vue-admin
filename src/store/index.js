@@ -9,7 +9,11 @@ Vue.use(Vuex)
 const state = {
   addDialogVisible: false,
   editDialogVisible: false,
-  setDialogVisible: false
+  setDialogVisible: false,
+  addRoleDialogVisible: false,
+  editRoleDialogVisible: false,
+  setRoleDialogVisible: false,
+  editGoodsDialogVisible: false
 }
 
 export default new Vuex.Store({

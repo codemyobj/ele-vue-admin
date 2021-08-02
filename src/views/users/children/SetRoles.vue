@@ -22,7 +22,7 @@
     </div>
     <!-- 底部区域 -->
     <span slot="footer" class="dialog-footer">
-      <el-button @click="setRoleCancle">取消</el-button>
+      <el-button @click="setRoleDialogClose">取消</el-button>
       <el-button type="primary" @click="saveRoleInfo">确定</el-button>
     </span>
   </el-dialog>
@@ -69,9 +69,6 @@ export default {
       this.$store.commit("IsSetDialogShow", false);
       this.selectedRoleId = "";
       // this.userInfo = {};
-    },
-    setRoleCancle() {
-      this.$store.commit("IsSetDialogShow", false);
     },
     saveRoleInfo() {
       if (!this.selectedRoleId) {
