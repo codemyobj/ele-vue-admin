@@ -27,3 +27,27 @@ export function removeGoods(id) {
     method: 'delete'
   }).catch(err => err)
 }
+
+export function getCateList() {
+  return request({
+    url: 'categories',
+    method: 'get'
+  }).catch(err => err)
+}
+
+export function getManyTableData(id, type) {
+  return request({
+    url: `categories/${id}/attributes`,
+    method: 'get',
+    params: {
+      sel: type
+    }
+  }).catch(err => err)
+}
+
+export function getOnlyTableData(id, type) {
+  return request({
+    url: `categories/${id}/attributes`,
+    params: { type }
+  }).catch(err => err)
+}
