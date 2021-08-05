@@ -51,3 +51,11 @@ export function getOnlyTableData(id, type) {
     params: { type }
   }).catch(err => err)
 }
+
+export function postGoods(form) {
+  return request({
+    url: 'goods',
+    method: 'post',
+    data: form
+  }).catch(err => err)
+}

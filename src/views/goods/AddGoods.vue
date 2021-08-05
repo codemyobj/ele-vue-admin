@@ -34,11 +34,13 @@
         :rules="addFormRules"
         ref="addFormRef"
         label-width="100px"
+        label-position="top"
       >
         <el-tabs
           tab-position="left"
           v-model="activeIndex"
           @tab-click="tabClicked"
+          :before-leave="beforeTabLeave"
         >
           <el-tab-pane name="0" label="基本信息">
             <el-form-item label="商品名称" prop="goods_name">
@@ -96,18 +98,30 @@
               list-type="picture-card"
               :headers="headerObj"
               :action="uploadUrl"
+              :on-preview="handlePreview"
+              :on-remove="handleRemove"
+              :on-success="uploadSuccess"
             >
               <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
           </el-tab-pane>
 
           <el-tab-pane name="4" label="商品内容" v-model="activeIndex">
-            <quill-editor></quill-editor>
-            <el-button type="primary" class="btnAdd">添加商品</el-button>
+            <!-- 富文本编辑器组件 -->
+            <quill-editor v-model="addForm.goods_introduce" />
+            <!-- 添加商品按钮 -->
+            <el-button type="primary" class="btnAdd" @click="add"
+              >添加商品</el-button
+            >
           </el-tab-pane>
         </el-tabs>
       </el-form>
     </el-card>
+
+    <!-- 图片预览 -->
+    <el-dialog width="40%" title="图片预览" :visible.sync="previewVisible">
+      <img class="previewImg" :src="previewPath" alt="" />
+    </el-dialog>
   </div>
 </template>
 
@@ -116,7 +130,14 @@ import BreadCrumb from "@/components/common/breadCrumb";
 
 import { addFormRules } from "./FormRuler";
 
-import { getCateList, getManyTableData, getOnlyTableData } from "@/api/goods";
+import {
+  getCateList,
+  getManyTableData,
+  getOnlyTableData,
+  postGoods,
+} from "@/api/goods";
+
+import _ from "lodash";
 
 export default {
   name: "AddGoods",
@@ -161,11 +182,12 @@ export default {
         Authorization: window.sessionStorage.getItem("token"),
       },
       uploadUrl: "http://120.53.120.229:8888/api/private/v1/upload",
+      previewPath: "",
+      previewVisible: false,
     };
   },
   created() {
     this._getCateList();
-    console.log(this.addForm);
   },
   computed: {
     cateId() {
@@ -214,19 +236,103 @@ export default {
             duration: 1500,
           });
         }
-
         this.onlyTableData = data.data;
       });
     },
+    //tab 被选中时触发
     tabClicked() {
+      //判断访问的是商品参数还是商品属性
       if (this.activeIndex === "1") {
         this._getManyTableData();
       } else if (this.activeIndex === "2") {
         this._getOnlyTableData();
       }
     },
+
+    //级联选择器 发生变化触发该函数
     handleChange() {
       console.log(this.addForm.goods_cat);
+      if (
+        this.addForm.goods_cat.length === 1 ||
+        this.addForm.goods_cat.length === 2
+      ) {
+        this.addForm.goods_cat = [];
+        return this.$message("只允许设置三级分类");
+      }
+    },
+    beforeTabLeave(toActiveName, oldActiveName) {
+      //需要校验的数组or字符串
+      const RulesArr = Object.keys(this.addFormRules);
+      let arrErrorInfo = [];
+
+      //校验通过errorInfo为空 校验不通过为指定的验证规则message
+      this.$refs.addFormRef.validateField(RulesArr, (errorInfo) => {
+        if (errorInfo) {
+          arrErrorInfo.push(errorInfo);
+        }
+      });
+
+      if (arrErrorInfo.length !== 0) {
+        this.$message.error(arrErrorInfo[0]);
+        return false;
+      } else {
+        return true;
+      }
+    },
+    //处理图片预览效果
+    handlePreview(file) {
+      console.log(file);
+      this.previewPath = "";
+      this.previewPath = file.url;
+
+      if (this.previewPath != "") {
+        this.previewVisible = true;
+      }
+    },
+    handleRemove(file) {},
+    uploadSuccess(response) {
+      const picInfo = { pic: response.data.tem_path };
+      this.addForm.pics.push(picInfo);
+      console.log(this.addForm);
+    },
+    add() {
+      this.$refs.addFormRef.validate(async (valid, obj) => {
+        // 如果未通过
+        if (!valid) {
+          let arr = Object.values(obj);
+          let errorInfo = obj[arr[0][0]].message;
+          return this.$message.error(errorInfo);
+        }
+        // 执行添加的业务逻辑
+        // 处理动态参数
+        this.manyTableData.forEach((i) => {
+          const newInfo = {
+            attr_id: i.attr_id,
+            attr_value: i.attr_vals.join(","),
+          };
+          this.addForm.attrs.push(newInfo);
+        });
+        // 处理静态属性
+        this.onlyTableData.forEach((i) => {
+          const newInfo = {
+            attr_id: i.attr_id,
+            attr_value: i.attr_vals,
+          };
+          this.addForm.attrs.push(newInfo);
+        });
+
+        const form = _.cloneDeep(this.addForm);
+        form.goods_cat = form.goods_cat.join(",");
+
+        postGoods(form).then((res) => {
+          const data = res.data;
+          if (data.meta.status !== 201) {
+            return this.$message.error("商品添加失败：" + data.meta.msg);
+          }
+          this.$message.success("添加商品成功!");
+          this.$router.push("/goods");
+        });
+      });
     },
   },
 };
