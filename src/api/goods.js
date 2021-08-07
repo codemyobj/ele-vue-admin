@@ -110,3 +110,53 @@ export function sureEditParams(id, attrId, info) {
     data: info
   }).catch(err => err)
 }
+
+export function getDetailCateList(queryInfo) {
+  return request({
+    url: 'categories',
+    params: queryInfo,
+    method: 'get'
+  }).catch(err => err)
+}
+
+export function getParentCateList() {
+  return request({
+    url: 'categories',
+    method: 'get',
+    params: {
+      type: 2
+    }
+  }).catch(err => err)
+}
+
+export function sureAddCate(form) {
+  return request({
+    url: 'categories',
+    data: form,
+    method: 'post'
+  }).catch(err => err)
+}
+
+export function showCateEditInfo(id) {
+  return request({
+    url: 'categories/' + id,
+    method: 'get'
+  }).catch(err => err)
+}
+
+export function sureEditFormInfo(id, name) {
+  return request({
+    url: 'categories/' + id,
+    data: {
+      cat_name: name
+    },
+    method: 'put'
+  }).catch(err => err)
+}
+
+export function removeCateList(id) {
+  return request({
+    url: 'categories/' + id,
+    method: 'delete'
+  }).catch(err => err)
+}

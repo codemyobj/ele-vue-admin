@@ -17,4 +17,11 @@ const editAndAddRules = {
   attr_name: [{ required: true, message: `请输入参数名称`, trigger: 'blur' }]
 }
 
-export { formRules, addFormRules, editAndAddRules }
+const addCateFormRuler = {
+  cat_name: [
+    { required: true, message: '请输入分类名称', trigger: 'blur' },
+    { min: 2, max: 16, message: '长度在 2 到 16 个字符', trigger: 'blur' }
+  ]
+}
+
+export { formRules, addFormRules, editAndAddRules, addCateFormRuler }
