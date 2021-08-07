@@ -339,4 +339,32 @@ export default {
 </script>
 
 <style scoped lang='less'>
+.no-weight {
+  font-weight: 500;
+}
+.el-steps {
+  margin: 15px 0;
+}
+.el-step__title {
+  font-size: 14px;
+}
+.el-form--label-top .el-form-item__label {
+  padding: 0;
+}
+.el-checkbox {
+  margin: 0 10px 0 0 !important;
+}
+.previewImg {
+  width: 100%;
+  object-fit: cover;
+}
+.btnAdd {
+  margin-top: 15px !important;
+}
+#cancel-font-weight .el-breadcrumb__inner.is-link {
+  font-weight: 500 !important;
+}
+#cancel-font-weight:hover .el-breadcrumb__inner.is-link {
+  font-weight: 700 !important;
+}
 </style>
